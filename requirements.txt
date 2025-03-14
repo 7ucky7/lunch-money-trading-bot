@@ -1,0 +1,6 @@
+cbpro==1.1.4
+python-dotenv==0.20.0
+numpy==1.23.1
+pandas==1.4.3
+requests==2.28.1
+schedule==1.1.0 
