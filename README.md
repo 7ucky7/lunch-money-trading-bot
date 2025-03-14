@@ -1,83 +1,232 @@
-# Lunch Money Trading Bot
+# Espero Trading Bot
 
-A simple cryptocurrency trading bot designed to generate small daily profits using a grid trading strategy on Coinbase Pro (now Coinbase Advanced Trade API).
-
-## DISCLAIMER
-
-**USE AT YOUR OWN RISK**
-
-This trading bot:
-- Is provided for educational purposes only
-- Involves substantial risk of loss
-- Is not guaranteed to make profits
-- Should never be used with money you cannot afford to lose
-- Requires proper understanding of cryptocurrency markets and trading
+A powerful, modular cryptocurrency trading bot with support for traditional technical analysis strategies and machine learning models.
 
 ## Features
 
-- Implements a grid trading strategy that places multiple buy and sell orders at predetermined intervals
-- Aims to profit from natural market volatility
-- Tracks daily and total profits
-- Logs all transactions and activity
-- Targets a customizable daily profit goal
+- **Real-Time Data Streaming**: WebSocket connections for live market data
+- **Multiple Strategy Support**: Combine technical and machine learning approaches
+- **Position Management**: Automatic tracking of open positions and P&L
+- **Risk Management**: Configurable risk limits and position sizing
+- **Backtesting Engine**: Test strategies on historical data
+- **Paper Trading Mode**: Practice without risking real funds
+- **Customizable Configuration**: Tailor the bot to your trading style
 
-## Requirements
+## Architecture
 
-- Python 3.7+
-- Coinbase Pro API credentials with trading privileges
-- Sufficient funds in your Coinbase Pro account
+The bot is built with a modular architecture that separates concerns and allows for easy extension:
+
+- **Data Manager**: Handles data collection, processing, and storage
+- **Strategy Framework**: Provides a common interface for implementing trading strategies
+- **Position Manager**: Tracks and manages trading positions
+- **Order Validator**: Ensures trades comply with exchange and risk rules
+- **Trading Bot**: Orchestrates all components and manages the trading cycle
+
+## Included Strategies
+
+The bot comes with several built-in strategies:
+
+1. **Moving Average Crossover**: Generates signals based on MA crossovers
+2. **RSI**: Identifies overbought and oversold conditions
+3. **Bollinger Bands**: Trades mean reversion and breakouts
+4. **MACD**: Uses MACD histogram reversals and zero-line crossovers
+5. **ML Strategy** (optional): Combines LSTM, Random Forest, and Gradient Boosting models
 
 ## Installation
 
-1. Clone this repository
-2. Install required packages:
+### Prerequisites
+
+- Python 3.8+
+- Coinbase API credentials
+
+### Setup
+
+1. Clone the repository:
    ```
-   pip install -r requirements.txt
+   git clone https://github.com/yourusername/espero-trading-bot.git
+   cd espero-trading-bot
    ```
-3. Copy `.env.example` to `.env` and fill in your Coinbase Pro API credentials:
+
+2. Run the setup script to create a virtual environment and install dependencies:
    ```
-   cp .env.example .env
+   chmod +x setup.sh
+   ./setup.sh
    ```
-4. Edit `.env` with your actual API credentials
+
+3. Activate the virtual environment:
+   ```
+   source venv/bin/activate
+   ```
+
+4. Create a `config.json` file with your API credentials and trading parameters (see Configuration section below).
 
 ## Configuration
 
-You can adjust the trading parameters in `lunch_money_bot.py`:
+The bot is configured using a JSON file. Here's an example configuration:
 
-```python
-TRADING_PAIR = "BTC-USD"  # The cryptocurrency pair to trade
-TARGET_PROFIT_USD = 20.00  # Target profit in USD
-GRID_LEVELS = 5  # Number of buy/sell grid levels
-GRID_SPREAD_PERCENTAGE = 0.5  # Percentage between grid levels
-POSITION_SIZE_USD = 100.00  # Size of each position in USD
+```json
+{
+  "api_key": "YOUR_API_KEY",
+  "api_secret": "YOUR_API_SECRET",
+  "environment": "sandbox",
+  "products": ["BTC-USD", "ETH-USD"],
+  "cycle_interval": 60,
+  "min_trade_confidence": 0.65,
+  "allow_multiple_positions": false,
+  "risk": {
+    "risk_per_trade": 0.02,
+    "stop_loss_pct": 0.05,
+    "take_profit_pct": 0.1,
+    "max_open_positions": 5,
+    "max_daily_drawdown": 0.05
+  },
+  "signal_weights": {
+    "MACrossoverStrategy": 1.0,
+    "RSIStrategy": 1.0,
+    "BollingerBandsStrategy": 1.0,
+    "MACDStrategy": 1.0,
+    "MLStrategy": 2.0
+  },
+  "strategies": {
+    "ma_crossover": {
+      "short_period": 20,
+      "long_period": 50,
+      "signal_threshold": 0.5,
+      "timeframes": ["1h", "4h", "1d"]
+    },
+    "rsi": {
+      "rsi_period": 14,
+      "overbought_threshold": 70,
+      "oversold_threshold": 30,
+      "signal_threshold": 0.5,
+      "timeframes": ["1h", "4h"]
+    },
+    "bollinger_bands": {
+      "period": 20,
+      "std_dev": 2.0,
+      "signal_threshold": 0.5,
+      "timeframes": ["1h", "4h", "1d"]
+    },
+    "macd": {
+      "fast_period": 12,
+      "slow_period": 26,
+      "signal_period": 9,
+      "signal_threshold": 0.5,
+      "timeframes": ["1h", "4h", "1d"]
+    },
+    "ml_strategy": {
+      "lstm_lookback": 30,
+      "forest_max_depth": 10,
+      "gradient_boosting_n_estimators": 100,
+      "use_ensemble": true,
+      "timeframes": ["1h", "4h", "1d"]
+    }
+  },
+  "backtest": {
+    "initial_balance": 10000,
+    "fee_rate": 0.001,
+    "slippage": 0.0005
+  }
+}
 ```
 
 ## Usage
 
-Run the bot:
+### Paper Trading Mode
+
+Run the bot in paper trading mode (no real trades):
 
 ```
-python lunch_money_bot.py
+python trading_bot.py --config config.json --paper
 ```
 
-The bot will:
-1. Set up a grid of buy and sell orders around the current market price
-2. Check for filled orders every 5 minutes
-3. Automatically reset the grid when necessary
-4. Track profits and reset the daily counter at midnight
+### Live Trading Mode
 
-## Logs
+Run the bot with real trading (use with caution):
 
-All activity is logged to `trading_bot.log` with timestamps and details.
+```
+python trading_bot.py --config config.json --live
+```
 
-## Security Considerations
+The bot will prompt for confirmation before starting live trading.
 
-- Never share your API credentials
-- Use IP whitelisting in your Coinbase Pro settings
-- Consider using a dedicated Coinbase Pro account with limited funds
-- Keep your API secret keys secure
-- Regularly monitor the bot's activity
+### Backtesting
+
+Test strategies using historical data:
+
+```
+python backtesting.py --config config.json --product BTC-USD --start 2023-01-01 --end 2023-12-31 --plot
+```
+
+Additional options:
+- `--plot`: Generate a performance chart
+- `--save results.json`: Save detailed results to a file
+
+## Testing Components
+
+### Test Data Manager
+
+```
+python test_data_manager.py
+```
+
+### Test Position Manager
+
+```
+python test_position_manager.py
+```
+
+### Test Order Validator
+
+```
+python test_order_validator.py
+```
+
+## Creating Custom Strategies
+
+You can create custom strategies by extending the `Strategy` class:
+
+```python
+from strategy_framework import Strategy, Signal, SignalType, TimeFrame
+
+class MyCustomStrategy(Strategy):
+    def __init__(self, config=None):
+        super().__init__(config)
+        # Initialize your strategy parameters
+        
+    async def generate_signals(self, data, product_id):
+        signals = []
+        # Implement your signal generation logic
+        return signals
+```
+
+Register your strategy in the trading bot:
+
+```python
+from my_custom_strategy import MyCustomStrategy
+
+# In the _register_strategies method:
+self.strategy_registry.register(
+    MyCustomStrategy(strategy_configs.get('my_custom_strategy', {}))
+)
+```
+
+## Important Notes
+
+- **API Rate Limits**: Be aware of exchange rate limits
+- **Risk Management**: Always use proper risk management settings
+- **Testing**: Thoroughly test in paper trading mode before using real funds
+- **Security**: Keep your API credentials secure
+
+## Disclaimer
+
+Trading cryptocurrencies involves significant risk. This software is provided for educational and research purposes only. Use at your own risk.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- Coinbase for providing the API
+- All the open-source libraries that made this project possible 

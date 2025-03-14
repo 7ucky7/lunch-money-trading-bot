@@ -1,0 +1,35 @@
+{
+    "api_key": "YOUR_COINBASE_API_KEY",
+    "api_secret": "YOUR_COINBASE_API_SECRET",
+    "products": ["BTC-USD", "ETH-USD"],
+    
+    "max_position_size": 0.1,
+    "max_risk_per_trade": 0.02,
+    "max_total_risk": 0.1,
+    
+    "trading_interval": 60,
+    "monitor_interval": 30,
+    
+    "ml_strategy": {
+        "lookback_periods": 60,
+        "prediction_periods": 12,
+        "confidence_threshold": 0.7,
+        "model_path": "models/trading_model",
+        
+        "training": {
+            "batch_size": 32,
+            "epochs": 100,
+            "train_split": 0.8,
+            "learning_rate": 0.001
+        },
+        
+        "model_params": {
+            "lstm_hidden_dim": 128,
+            "lstm_num_layers": 2,
+            "lstm_dropout": 0.2,
+            "xgb_max_depth": 6,
+            "xgb_learning_rate": 0.1,
+            "xgb_n_estimators": 100
+        }
+    }
+} 
